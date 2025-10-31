@@ -41,6 +41,7 @@ Thumbs.db
 *.seed
 .dockerignore
 docker-compose.override.yml
+dockerfile
 
 # Coverage / testing
 htmlcov/
