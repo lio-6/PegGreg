@@ -1,0 +1,14 @@
+[BACK END]
+- [ ] create balance sheet 
+- [ ] create custom splits 
+- [ ] create equal splits 
+- [ ] create percentage splits (if input contains %)
+
+[DATABASE]
+- [ ] 
+
+[LOGIN]
+
+[FRONT END]
+
+[HOSTING]
