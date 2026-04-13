@@ -9,15 +9,6 @@ dist/
 build/
 .eggs/
 
-# Django stuff:
-*.log
-*.pot
-*.pyc
-*.mo
-local_settings.py
-db.sqlite3
-media/
-staticfiles/
 
 # Environments
 .env
@@ -43,9 +34,10 @@ Thumbs.db
 docker-compose.override.yml
 dockerfile
 
-# Coverage / testing
-htmlcov/
-.coverage
-.tox/
-.nox/
-pytest_cache/
+js-edition/node-modules/
+# Jest test files
+*.test.js
+*.spec.js
+*.test.ts
+*.spec.ts
+__tests__/
