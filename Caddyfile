@@ -1,0 +1,16 @@
+# Caddy routes traffic to the right container by URL path.
+# Everything hitting /api/* goes to the backend.
+# Everything else goes to the frontend.
+# Caddy handles TLS automatically — no certbot needed.
+
+{$DOMAIN} {
+    # API requests → backend
+    handle /api/* {
+        reverse_proxy backend:3000
+    }
+
+    # Everything else → frontend
+    handle {
+        reverse_proxy frontend:80
+    }
+}

@@ -1,0 +1,62 @@
+# docker-compose.yml (root of project)
+
+services:
+
+  # ── Database ──────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine     # use official image, no Dockerfile needed
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       grocery_splitter
+      POSTGRES_USER:     app
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      # Named volume — data lives here between restarts/rebuilds
+      # Lives at /var/lib/docker/volumes/... on your server
+      - postgres_data:/var/lib/postgresql/data
+    # Not exposed to the host — only backend can reach it
+    # via Docker's internal network
+
+  # ── Backend ───────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend          # look for Dockerfile in ./backend
+    restart: unless-stopped
+    depends_on:
+      - postgres                  # don't start until postgres is up
+    environment:
+      DATABASE_URL: postgres://app:${DB_PASSWORD}@postgres:5432/grocery_splitter
+      JWT_SECRET:   ${JWT_SECRET}
+      NODE_ENV:     production
+    # Also not exposed directly — Caddy proxies to it
+
+  # ── Frontend ──────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # This gets baked into the frontend bundle at build time
+        VITE_API_URL: https://${DOMAIN}/api
+    restart: unless-stopped
+    # Also sits behind Caddy
+
+  # ── Reverse Proxy ─────────────────────────────────────────────
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"                   # HTTP (Caddy redirects to HTTPS)
+      - "443:443"                 # HTTPS
+      - "443:443/udp"             # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data          # stores TLS certificates
+    depends_on:
+      - backend
+      - frontend
+
+
+# Named volumes — Docker manages these on disk
+volumes:
+  postgres_data:
+  caddy_data:
