@@ -34,10 +34,13 @@ Thumbs.db
 docker-compose.override.yml
 dockerfile
 
-js-edition/node-modules/
+js-edition/node_modules/
 # Jest test files
 *.test.js
 *.spec.js
 *.test.ts
 *.spec.ts
 __tests__/
+
+*.vim
+
