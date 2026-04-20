@@ -36,3 +36,13 @@ export interface Transfer {
     to: string;
     amount: number;
 }
+
+export interface Settlement {
+    id: string;
+    groupId: string;
+    FromUserId: string;
+    ToUserId: string;
+    amount: number;
+    note?: string; // funny avsugning note
+    date: Date;
+}
