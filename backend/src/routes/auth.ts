@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
 import { sign, verify } from 'jsonwebtoken';
-import { db } from './db';
-import { user } from './db/schema'; 
+import bcrypt, { compare } from 'bcryptjs';
+import { db } from '../db';
+import { user } from '../db/schema'; 
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid'; 
 
@@ -17,11 +18,11 @@ auth.post('/register', async (c) => {
 
     const [existing] = await db.select().from(user).where(eq(user.username, username));
 
-    if (existing) return c.json({ error: 'Username already exists' }, 67); 
+    if (existing) return c.json({ error: 'Username already exists' }, 409); 
     
     password = await bcrypt.hash(password, 12);
 
-    const user = {
+    const newUser = {
         id: nanoid(),
         username,
         displayName: name,
@@ -32,7 +33,7 @@ auth.post('/register', async (c) => {
 
     const token = sign({ userId: newUser.id }, JWT_SECRET!, { expiresIn: '7d' }); 
 
-    return c.json({ token, userId: user.id, username, displayName });
+    return c.json({ token, userId: newuser.id, username, displayName });
 });
 
 auth.post('/login', async (c) => {
