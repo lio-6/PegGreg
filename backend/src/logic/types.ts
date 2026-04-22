@@ -27,6 +27,7 @@ export interface Group {
 
 export interface User {
     id: string;
+    username: string;
     name: string;
 }
 
@@ -40,8 +41,8 @@ export interface Transfer {
 export interface Settlement {
     id: string;
     groupId: string;
-    FromUserId: string;
-    ToUserId: string;
+    fromUserId: string;
+    toUserId: string;
     amount: number;
     note?: string; // funny avsugning note
     date: Date;

@@ -1,11 +1,8 @@
-import { Expense, Group, Transfer } from "./types";
+import { Expense, Group, Transfer, Settlement } from "./types";
 
 // ─── Split helpers ──────────────────────────────────────────────
 
-function splitEqual(
-    participantIds: string[],
-    price: number,
-): Record<string, number> {
+export function splitEqual(participantIds: string[], price: number): Record<string, number> {
     if (participantIds.length === 0) return {};
     const share = Math.floor((price * 100) / participantIds.length);
     const remainder = Math.round(price * 100) - share * participantIds.length;
@@ -18,10 +15,7 @@ function splitEqual(
     return result;
 }
 
-function splitPercentage(
-    splits: Record<string, number>,
-    price: number,
-): Record<string, number> {
+export function splitPercentage(splits: Record<string, number>, price: number): Record<string, number> {
     const total = Object.values(splits).reduce((a, b) => a + b, 0);
     if (Math.round(total) !== 100) {
         throw new Error(`Percentages must sum to 100, got ${total}`);
@@ -33,10 +27,7 @@ function splitPercentage(
     return result;
 }
 
-function splitExact(
-    splits: Record<string, number>,
-    price: number,
-): Record<string, number> {
+export function splitExact(splits: Record<string, number>,price: number): Record<string, number> {
     const total = Object.values(splits).reduce((a, b) => a + b, 0);
     if (Math.round(total * 100) !== Math.round(price * 100)) {
         throw new Error(`Exact splits (${total}) must equal price (${price})`);
@@ -50,10 +41,7 @@ function splitExact(
  * Returns a net balance map for a group.
  * Positive = owed money. Negative = owes money.
  */
-export function calcBalance(
-    expenses: Expense[],
-    groupId: string,
-): Record<string, number> {
+export function calcBalance(expenses: Expense[], settlements: Settlement[], groupId: string): Record<string, number> {
     const balance: Record<string, number> = {};
 
     for (const expense of expenses) {
@@ -83,6 +71,14 @@ export function calcBalance(
         for (const [userId, amount] of Object.entries(deductions)) {
             balance[userId] = (balance[userId] ?? 0) - amount;
         }
+    }
+
+    for (const settlement of settlements) {
+        if (settlement.groupId !== groupId) continue; // <-- group filter
+            
+        balance[settlement.fromUserId] = (balance[settlement.fromUserId] ?? 0) + settlement.amount;
+        balance[settlement.toUserId] = (balance[settlement.toUserId] ?? 0) - settlement.amount;
+    
     }
 
     return balance;
