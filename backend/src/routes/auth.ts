@@ -11,8 +11,8 @@ const auth = new Hono();
 const JWT_SECRET = process.env.JWT_SECRET
 
 auth.post('/register', async (c) => {
-    const { username, password, name } = await c.req.json();
-    if (!username || !password || !name) {
+    const { username, password, displayName } = await c.req.json();
+    if (!username || !password || !displayName) {
         return c.json({ error: 'Missing fields' }, 400);
     }
 
@@ -20,20 +20,20 @@ auth.post('/register', async (c) => {
 
     if (existing) return c.json({ error: 'Username already exists' }, 409); 
     
-    password = await bcrypt.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     const newUser = {
         id: nanoid(),
-        username,
-        displayName: name,
-        passwordHash: password,
+        username: username,
+        displayName: displayName,
+        passwordHash: hashedPassword,
     };
 
     await db.insert(user).values(newUser);
 
     const token = sign({ userId: newUser.id }, JWT_SECRET!, { expiresIn: '7d' }); 
 
-    return c.json({ token, userId: newuser.id, username, displayName });
+    return c.json({ token, userId: newUser.id, username, displayName });
 });
 
 auth.post('/login', async (c) => {
@@ -41,9 +41,9 @@ auth.post('/login', async (c) => {
     if (!username || !password) {
         return c.json({ error: 'Missing fields' }, 400);
     }
-    const [user] = await db.select().from(user).where(eq(user.username, username));
+    const [foundUser] = await db.select().from(user).where(eq(user.username, username));
 
-    if (!user) return c.json({ error: 'invalid username or password' }, 401);
+    if (!foundUser) return c.json({ error: 'invalid username or password' }, 401);
 
     const valid = await compare(password, user.passwordHash);
 
