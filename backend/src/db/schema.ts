@@ -18,7 +18,7 @@ export const group = pgTable("groups", {
     createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const grouppMembers = pgTable("group_members", {
+export const groupMembers = pgTable("group_members", {
     groupId: text("group_id").notNull().references(() => group.id, {onDelete: "cascade"}),
     userId: text("user_id").notNull().references(() => user.id, {onDelete: "cascade"}),
 });
