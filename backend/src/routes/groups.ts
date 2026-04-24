@@ -1,9 +1,7 @@
 import { Hono } from 'hono';
-import { sign, verify } from 'jsonwebtoken';
-import bcrypt, { compare } from 'bcryptjs';
 import { db } from '../db';
 import { group, groupMembers } from '../db/schema'; 
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid'; 
 
 const groupRoute = new Hono();
@@ -38,6 +36,15 @@ groupRoute.post('/join', async (c) => {
     const [foundGroup] = await db.select().from(group).where(eq(group.InviteCode, inviteCode));
 
     if (!foundGroup) return c.json({ error: 'Invalid invite code' }, 404);
+
+    const existingMembership = await db.select().from(groupMembers).where(and(
+        eq(groupMembers.groupId, foundGroup.id),
+        eq(groupMembers.userId, userId)
+    )).limit(1);
+
+    if (existingMembership) {
+        return c.json({ error: 'User already a member of this group' }, 400);
+    }
 
     const membership = {
         groupId: foundGroup.id,

@@ -24,8 +24,8 @@ auth.post('/register', async (c) => {
 
     const newUser = {
         id: nanoid(),
-        username: username,
-        displayName: displayName,
+        username,
+        displayName,
         passwordHash: hashedPassword,
     };
 
@@ -49,8 +49,9 @@ auth.post('/login', async (c) => {
 
     if (!valid) return c.json({ error: 'invalid username or password' }, 401);
 
-    const token = sign({ userId: user.id }, JWT_SECRET, { expiresIn: "30d" });
+    const token = sign({ userId: foundUser.id }, JWT_SECRET, { expiresIn: "30d" });
   // Return displayName so the frontend can greet the user immediately
-    return c.json({ token, userId: user.id, username: user.username, displayName: user.displayName });
+    return c.json({ token, userId: foundUser.id, username: foundUser.username, displayName: foundUser.displayName });
 });
 
+export default auth;
